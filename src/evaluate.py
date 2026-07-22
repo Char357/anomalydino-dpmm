@@ -27,6 +27,7 @@ def evaluate_dpmm(
     stats = {
         "loss": 0,
         "num_samples": 0,
+        "image_paths": [],
         "anomaly_map": [],
         "distance_map": [],
         "cosine_distance_map": [],
