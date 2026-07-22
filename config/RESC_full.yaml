@@ -51,14 +51,17 @@ density_model:
     create_component_map_plot: False
 
 # Dataset
+
+
 dataset:
   name: RESC
-  data_root: /home/scnico/datasets/bmad/RESC          # Path to the root directory of the dataset.
-  path_train_images: "{data_root}/Train/train/{type_anomaly}"
-  path_val_images: "{data_root}/Val/val/{type_anomaly}"
-  path_val_labels: "{data_root}/Val/val_label/{type_anomaly}"
-  path_test_images: "{data_root}/Test/test/{type_anomaly}"
-  path_test_labels: "{data_root}/Test/test_label/{type_anomaly}"
+  data_root: /home/saturn/iwai/iwai141h/datasets/bmad/RESC          # Path to the root directory of the dataset.
+  path_train_images: "{data_root}/train/{type_anomaly}"
+  path_val_images: "{data_root}/val/{type_anomaly}/img"
+  path_val_labels: "{data_root}/val/{type_anomaly}/label"
+  path_test_images: "{data_root}/test/{type_anomaly}/img"
+  path_test_labels: "{data_root}/test/{type_anomaly}/label"
   objects: [""]
   object_anomalies:
-    "": ["Ungood"]
+    "": ["ungood"]
+
