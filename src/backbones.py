@@ -2,7 +2,7 @@
 # File adapted from AnomalyDINO (https://github.com/dammsi/AnomalyDINO) #
 # Code from AnomalyDINO is used under the Apache License 2.0            #
 #########################################################################
-
+from __future__ import annotations
 import cv2
 from collections import deque
 import numpy as np
@@ -14,7 +14,7 @@ from torchvision import models
 from torchvision import transforms
 from torchvision.models.feature_extraction import create_feature_extractor
 
-from anomalib.models.components import TimmFeatureExtractor
+#from anomalib.models.components import TimmFeatureExtractor
 from src.utils import conv_to_vit_features
 
 
@@ -280,6 +280,7 @@ class ResNetWrapper(VisionTransformerWrapper):
             resnet_dino = torch.hub.load('facebookresearch/dino:main', 'dino_resnet50')
             model = create_feature_extractor(resnet_dino, self.layers)
         else:
+            from anomalib.models.components import TimmFeatureExtractor
             model = TimmFeatureExtractor(model_name, self.layers, pre_trained=True, requires_grad=False)
         model.eval()
 
