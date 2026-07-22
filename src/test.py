@@ -197,7 +197,7 @@ def test_dpmm_model(
         plt.savefig(os.path.join(experiment_dir, f"test_auroc_{map_key}.jpg"))
         plt.close()
 
-        max_dice = calculate_metric(test_stats_normal, test_stats_anomalous, map_key, OptimalF1())
+        max_dice = calculate_metric(test_stats_normal, test_stats_anomalous, map_key, OptimalF1(num_classes=1))
         logger.log(f"max_dice", max_dice, map_key)
         plt.tight_layout()
         plt.savefig(os.path.join(experiment_dir, f"test_max_dice_{map_key}.jpg"))
