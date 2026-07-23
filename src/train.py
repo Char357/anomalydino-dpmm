@@ -13,6 +13,7 @@ from tqdm import trange
 import wandb
 
 from src.DirichletProcessMixture.dpmm import DPMM
+from src.DirichletProcessMixture.finite_gmm import FiniteGMM
 from src.evaluate import evaluate_dpmm
 from src.positional_encoding import add_position_encoding
 from src.utils import config_get, save_checkpoint, normalize, resample_features
@@ -106,7 +107,9 @@ def train_dpmm_model(
     if config_get(cfg, "use_positional_encoding", default=False):
         embedding_dim += 2
 
-    dpmm = DPMM(
+    # Pick the density model: the finite GMM (ablation) or the paper's DPMM.
+    ModelClass = FiniteGMM if config_get(cfg, "density_model.dpmm.gmm_mode", default=False) else DPMM
+    dpmm = ModelClass(
         K=cfg.density_model.dpmm.max_num_components,
         D=embedding_dim,
         update_rate=cfg.density_model.dpmm.update_rate,
