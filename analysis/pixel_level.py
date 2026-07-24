@@ -12,7 +12,7 @@ does this:
 
 For RESC that is 1805 images x 1024 x 512 = ~9.5e8 pixels held in memory at once,
 fed into torchmetrics 0.10.3, which additionally *buffers every pixel* to build the
-ROC/PR curve. That needs ~65 GB of RAM, runs for hours, and crashed on AUPRO.
+ROC/PR curve. That needs ~65 GB of RAM, runs for hours, and crashed on AUPRO after 7+ hours.
 (AUPRO is not even a Table 1 metric, so we drop it.)
 
 HOW WE WORK AROUND THE BOTTLENECK
@@ -39,18 +39,19 @@ Paper's target for RESC (Table 1, "Ours"):  AUROC = 90.20 %,  AUPR = 41.66 %
 Our run used 20 epochs (the paper used 40); comparing to these numbers tells us
 whether 20 epochs was enough before we build the rest of the analysis on it.
 
-Author: Charlotte von Roznowski
 """
 
 import os
+import argparse
 import numpy as np
 import torch
 from torch.nn import functional as F
 from sklearn.metrics import roc_auc_score, average_precision_score
 
-RUN = ("results/AnomalyDINODPMM/RESC/dinov2_vits14_dpmm_448_500_full_pca_-1/"
-       "-1-shot_preprocess=agnostic_objectmask=False_normalize_True_pos_enc_False/"
-       "seed_0_")
+# Default run folder (the DPMM). Override with --run to point at a GMM run instead.
+DEFAULT_RUN = ("results/AnomalyDINODPMM/RESC/dinov2_vits14_dpmm_448_500_full_pca_-1/"
+               "-1-shot_preprocess=agnostic_objectmask=False_normalize_True_pos_enc_False/"
+               "seed_0_")
 
 # The same single-channel per-patch score maps as the image-level script.
 # For all of these, HIGHER = MORE ANOMALOUS, so no sign-flipping is needed.
@@ -67,10 +68,21 @@ SEED = 0                # fixed seed -> the subsample (and thus the numbers) is 
 PAPER_RESC = {"auroc": 90.20, "aupr": 41.66}
 
 
-def load(name):
+def parse_args():
+    p = argparse.ArgumentParser(
+        description="Pixel-level (Table 1) evaluation from saved test stats.")
+    p.add_argument("--run", default=DEFAULT_RUN,
+                   help="run folder containing test_stats_{normal,anomalous}.pth")
+    p.add_argument("--tag", default="",
+                   help="label appended to the output filename (e.g. gmm_K86); "
+                        "empty keeps the DPMM default pixel_level_results.csv")
+    return p.parse_args()
+
+
+def load(run, name):
     """Load a stats file lazily (mmap): tensors stay on disk until we touch them,
     so opening the 8 GB / 6 GB files costs almost no RAM."""
-    return torch.load(os.path.join(RUN, name), map_location="cpu",
+    return torch.load(os.path.join(run, name), map_location="cpu",
                       weights_only=False, mmap=True)
 
 
@@ -111,10 +123,12 @@ def collect_pixels(stats):
 
 
 def main():
+    args = parse_args()
+    print(f"run: {args.run}")
     torch.manual_seed(SEED)                  # reproducible subsample
 
-    normal = load("test_stats_normal.pth")
-    anom = load("test_stats_anomalous.pth")
+    normal = load(args.run, "test_stats_normal.pth")
+    anom = load(args.run, "test_stats_anomalous.pth")
 
     print("collecting sampled pixels (streaming, 5% subsample)...")
     s_norm, y_norm = collect_pixels(normal)   # normal images: all labels are 0
@@ -147,11 +161,13 @@ def main():
           f"AUPR {best[1] - PAPER_RESC['aupr']:+.2f} pp")
 
     os.makedirs("analysis/out", exist_ok=True)
-    with open("analysis/out/pixel_level_results.csv", "w") as f:
+    suffix = f"_{args.tag}" if args.tag else ""
+    out_path = f"analysis/out/pixel_level_results{suffix}.csv"
+    with open(out_path, "w") as f:
         f.write("score_map,auroc_pct,aupr_pct\n")
         for auroc, aupr, mk in sorted(rows, reverse=True):
             f.write(f"{mk},{auroc:.4f},{aupr:.4f}\n")
-    print("\nsaved -> analysis/out/pixel_level_results.csv")
+    print(f"\nsaved -> {out_path}")
 
 
 if __name__ == "__main__":
