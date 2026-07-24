@@ -25,6 +25,8 @@ matplotlib.use("Agg")   # render straight to file, no display needed
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, average_precision_score
 
+from plot_style import use_style, BLUE, GOLD, MUTED
+
 OUT = "analysis/out"
 
 KS = [10, 50, 86, 150]        # the GMM sweep points (x-axis)
@@ -65,13 +67,13 @@ def set_ylim(ax, values, pad=1.5, min_span=8.0):
 
 def panel(ax, gmm_vals, dpmm_val, title, ylabel):
     """One subplot: GMM value vs K (line + markers) with the DPMM as a horizontal reference."""
-    ax.plot(KS, gmm_vals, "o-", color="tab:blue", label="GMM (fixed K)")
-    ax.axhline(dpmm_val, color="tab:green", ls="--", lw=1.5,
+    ax.plot(KS, gmm_vals, "o-", color=BLUE, lw=2, ms=8, label="GMM (fixed K)")
+    ax.axhline(dpmm_val, color=GOLD, ls="--", lw=2,
                label=f"DPMM (auto K≈{DPMM_K}) = {dpmm_val:.2f}")
-    ax.axvline(DPMM_K, color="grey", ls=":", lw=1, alpha=0.7)   # mark the DPMM's K
+    ax.axvline(DPMM_K, color=MUTED, ls=":", lw=1, alpha=0.6)   # mark the DPMM's K
     for k, v in zip(KS, gmm_vals):
-        ax.annotate(f"{v:.1f}", (k, v), textcoords="offset points", xytext=(0, 6),
-                    ha="center", fontsize=7)
+        ax.annotate(f"{v:.1f}", (k, v), textcoords="offset points", xytext=(0, 8),
+                    ha="center", fontsize=8)
     ax.set_xticks(KS)
     ax.set_xlabel("number of GMM components K")
     ax.set_ylabel(ylabel)
@@ -82,6 +84,7 @@ def panel(ax, gmm_vals, dpmm_val, title, ylabel):
 
 
 def main():
+    use_style()
     # DPMM = the untagged files; GMM = one tagged file per K.
     dpmm_px_auroc, dpmm_px_aupr = pixel_metrics("")
     dpmm_im_auroc, dpmm_im_aupr = image_metrics("")
@@ -110,9 +113,10 @@ def main():
     panel(axes[1, 1], [gmm_im[k][1] for k in KS], dpmm_im_aupr,
           "Image-level (triage)", "AUPR [%]")
 
-    fig.suptitle("RESC: GMM performance vs K, with the DPMM (auto-K) as reference "
-                 f"— score = {SCORE_MAP}", fontsize=13)
-    fig.tight_layout(rect=[0, 0, 1, 0.97])
+    fig.suptitle("Component count K barely affects performance on RESC\n"
+                 "(GMM at fixed K vs the DPMM's auto-selected K; score = log-likelihood)",
+                 fontsize=17)
+    fig.tight_layout(rect=[0, 0, 1, 0.94])
     os.makedirs(OUT, exist_ok=True)
     out_path = os.path.join(OUT, "fig_sweep_dpmm_vs_gmm.png")
     fig.savefig(out_path, dpi=150)

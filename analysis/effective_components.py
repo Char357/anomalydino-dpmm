@@ -31,6 +31,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from plot_style import use_style, BLUE, PURPLE_RAMP, MUTED
 from src.DirichletProcessMixture.dpmm import DPMM
 from src.DirichletProcessMixture.finite_gmm import FiniteGMM
 
@@ -72,6 +73,7 @@ def perplexity(pi):
 
 
 def main():
+    use_style()
     print(f"{'model':>10} | {'nominal K':>9} | {'active@1e-2':>11} {'active@1e-3':>11} | {'perplexity':>10}")
     print("-" * 66)
 
@@ -88,10 +90,12 @@ def main():
         print(f"{label:>10} | {len(pi):>9} | {a2:>11} {a3:>11} | {perplexity(pi):>10.2f}")
 
     # --- spectrum figure: sorted mixing weights per model (log-y) ---
+    colors = [BLUE] + PURPLE_RAMP    # DPMM (blue) + K=10/50/86/150 (purple ramp), matches RUNS order
     fig, ax = plt.subplots(figsize=(8, 5))
-    for label, pi in spectra.items():
-        ax.plot(np.arange(1, len(pi) + 1), np.clip(pi, 1e-8, None), marker=".", ms=3, label=label)
-    ax.axhline(1e-2, color="grey", ls="--", lw=1, label="1% weight")
+    for (label, pi), color in zip(spectra.items(), colors):
+        ax.plot(np.arange(1, len(pi) + 1), np.clip(pi, 1e-8, None),
+                marker=".", ms=4, lw=2, color=color, label=label)
+    ax.axhline(1e-2, color=MUTED, ls="--", lw=1.2, label="1% weight")
     ax.set_yscale("log")
     ax.set_xlabel("component rank (largest weight first)")
     ax.set_ylabel("mixing weight $\\pi$")

@@ -24,6 +24,8 @@ matplotlib.use("Agg")   # no display on the cluster -> render straight to file
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, average_precision_score, roc_curve
 
+from plot_style import use_style, BLUE, CORAL, GOLD, MUTED, PURPLE_RAMP
+
 OUT = "analysis/out"
 
 # Maps ordered shape-aware first, then shape-blind, with short labels for the axes.
@@ -53,17 +55,17 @@ def figure_pooling_ablation(scores, y_true):
         vals = [100.0 * roc_auc_score(y_true, scores[f"{mk}__{method}"])
                 for mk, _ in MAP_ORDER]
         bars = ax.bar(x + (j - 1) * width, vals, width, label=method)
-        ax.bar_label(bars, fmt="%.1f", fontsize=7, padding=2)
+        ax.bar_label(bars, fmt="%.1f", fontsize=9, padding=2)
 
-    ax.axhline(50, color="grey", ls="--", lw=1, label="random (50)")
+    ax.axhline(50, color=MUTED, ls="--", lw=1.2, label="random (50)")
+    ax.axvline(3.5, color=MUTED, ls=":", lw=1, alpha=0.5)   # divides shape-aware | shape-blind maps
     ax.set_xticks(x)
     ax.set_xticklabels(labels, rotation=20, ha="right")
     ax.set_ylabel("Image-level AUROC [%]")
-    ax.set_ylim(45, 95)
+    ax.set_ylim(45, 104)
     ax.set_title("Image-level pooling ablation on RESC (patch → image score)")
-    ax.legend(title="pooling", ncol=4, loc="lower center")
-    ax.axvspan(-0.5, 3.5, color="tab:green", alpha=0.05)   # shade the shape-aware group
-    ax.axvspan(3.5, 6.5, color="tab:red", alpha=0.05)      # shade the shape-blind group
+    ax.legend(ncol=4, loc="upper center")
+    ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "fig_pooling_ablation.png"), dpi=150)
     plt.close(fig)
@@ -78,10 +80,10 @@ def figure_roc_curves(scores, y_true, map_key="anomaly_map"):
         fpr, tpr, _ = roc_curve(y_true, s)
         auc = 100.0 * roc_auc_score(y_true, s)
         ax.plot(fpr, tpr, label=f"{method}  (AUROC {auc:.1f})")
-    ax.plot([0, 1], [0, 1], color="grey", ls="--", lw=1, label="random")
+    ax.plot([0, 1], [0, 1], color=MUTED, ls="--", lw=1.2, label="random")
     ax.set_xlabel("False positive rate")
     ax.set_ylabel("True positive rate")
-    ax.set_title(f"Image-level ROC on RESC — score = {map_key}")
+    ax.set_title(f"image-level ROC on RESC (score: {map_key})")
     ax.legend(loc="lower right")
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "fig_roc_curves.png"), dpi=150)
@@ -96,8 +98,8 @@ def figure_score_histogram(scores, y_true, map_key="anomaly_map", method="topk")
     anomalous = s[y_true == 1]
 
     fig, ax = plt.subplots(figsize=(7, 4.5))
-    ax.hist(normal, bins=50, density=True, histtype="step", label="normal", color="tab:blue")
-    ax.hist(anomalous, bins=50, density=True, histtype="step", label="anomalous", color="tab:orange")
+    ax.hist(normal, bins=50, density=True, histtype="step", lw=2.2, label="normal", color=BLUE)
+    ax.hist(anomalous, bins=50, density=True, histtype="step", lw=2.2, label="anomalous", color=CORAL)
     ax.set_xlabel(f"pooled image score ({method} of {map_key})")
     ax.set_ylabel("density")
     ax.set_title("Separation of image-level scores on RESC")
@@ -119,9 +121,9 @@ def figure_pixel_vs_paper():
     vals = [rows[mk] for mk, _ in MAP_ORDER]
 
     fig, ax = plt.subplots(figsize=(9, 5))
-    bars = ax.bar(labels, vals, color="tab:purple")
-    ax.bar_label(bars, fmt="%.1f", fontsize=8, padding=2)
-    ax.axhline(PAPER_RESC_AUROC, color="black", ls="--", lw=1.2,
+    bars = ax.bar(labels, vals, color=PURPLE_RAMP[1])
+    ax.bar_label(bars, fmt="%.1f", fontsize=10, padding=2)
+    ax.axhline(PAPER_RESC_AUROC, color=GOLD, ls="--", lw=2,
                label=f"paper (Table 1): {PAPER_RESC_AUROC:.2f}")
     ax.set_xticklabels(labels, rotation=20, ha="right")
     ax.set_ylabel("Pixel-level AUROC [%]")
@@ -134,6 +136,7 @@ def figure_pixel_vs_paper():
 
 
 def main():
+    use_style()
     data = np.load(os.path.join(OUT, "image_level_scores.npz"))
     y_true = data["y_true"]
     scores = {k: data[k] for k in data.files if k != "y_true"}
