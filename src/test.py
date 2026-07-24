@@ -176,6 +176,13 @@ def test_dpmm_model(
             plt.savefig(os.path.join(plot_dir, f"test/model_visualization.jpg"))
         plt.close()
 
+    if config_get(cfg, "skip_builtin_metrics", default=False):
+        # The test stats are already saved above; everything below is the repo's built-in
+        # pixel-metric loop (torchmetrics over ~1e9 pixels) which is slow and memory-heavy.
+        # We compute metrics ourselves from the saved stats, so we skip it here.
+        print("skip_builtin_metrics=True: test stats saved; skipping the slow built-in pixel-metric loop.")
+        return
+
     logger = CSVLogger(os.path.join(experiment_dir, "stats_test.csv"), steps_before_flushing=1)
     score_map_keys = [
         "anomaly_map",

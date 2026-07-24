@@ -12,6 +12,7 @@ tag: "gmm"                                        # keeps GMM results in a separ
 wandb_log: False
 wandb_project: AnomalyDINODPMM
 resume: True
+skip_builtin_metrics: True                        # stop after saving stats; skip the slow/broken pixel-metric loop
 
 # Embedding model
 model_name: dinov2_vits14                        # Name of the backbone model.
