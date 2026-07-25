@@ -54,7 +54,7 @@ density_model:
 # Dataset
 dataset:
   name: bras2021
-  data_root: datasets/bmad/BraTS2021_slice          # Path to the root directory of the dataset.
+  data_root: /home/saturn/iwai/iwai141h/datasets/bmad/BraTS2021_slice   # absolute path from the working brain_dpmm.yaml; the relative path resolved to an empty dir -> num_samples=0 crash
   path_train_images: "{data_root}/train/{type_anomaly}"
   path_val_images: "{data_root}/valid/{type_anomaly}/img"
   path_val_labels: "{data_root}/valid/{type_anomaly}/label"
