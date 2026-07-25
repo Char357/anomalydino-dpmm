@@ -157,14 +157,21 @@ def main():
         rows.append((auroc, aupr, mk))
         print(f"{mk:30s} {auroc:9.2f} {aupr:9.2f}")
 
-    # Which of our maps best matches the paper's headline number?
-    best = max(rows)   # highest AUROC
-    print(f"\n=== comparison to paper ({args.paper_name}, Table 1 'Ours', 40 epochs) ===")
-    print(f"paper:      AUROC = {args.paper_auroc:.2f} %   AUPR = {args.paper_aupr:.2f} %")
-    print(f"ours(best): AUROC = {best[0]:.2f} %   AUPR = {best[1]:.2f} %   "
-          f"[{best[2]}, 20 epochs]")
-    print(f"difference: AUROC {best[0] - args.paper_auroc:+.2f} pp   "
-          f"AUPR {best[1] - args.paper_aupr:+.2f} pp")
+    # The paper's headline anomaly score is the COSINE distance to the nearest
+    # component mean (Eq. 11) -- NOT the likelihood, which the paper explicitly
+    # rejects (Sec. 2.2). So the like-for-like reproduction number is the
+    # cosine_distance_map row. We report that against the paper, and show the
+    # best-scoring map only as a secondary note.
+    by_map = {mk: (auroc, aupr) for auroc, aupr, mk in rows}
+    cos_auroc, cos_aupr = by_map["cosine_distance_map"]
+    best = max(rows)   # highest AUROC among all maps (secondary info only)
+    print(f"\n=== reproduction vs paper ({args.paper_name}, Table 3 'Cosine/True' = the headline metric) ===")
+    print(f"paper (cosine):  AUROC = {args.paper_auroc:.2f} %   AUPR = {args.paper_aupr:.2f} %")
+    print(f"ours  (cosine):  AUROC = {cos_auroc:.2f} %   AUPR = {cos_aupr:.2f} %   <-- THE reproduction number")
+    print(f"difference:      AUROC {cos_auroc - args.paper_auroc:+.2f} pp   "
+          f"AUPR {cos_aupr - args.paper_aupr:+.2f} pp")
+    print(f"\n(secondary) best-scoring map overall: {best[2]}  "
+          f"AUROC {best[0]:.2f} %  AUPR {best[1]:.2f} %")
 
     os.makedirs("analysis/out", exist_ok=True)
     suffix = f"_{args.tag}" if args.tag else ""
