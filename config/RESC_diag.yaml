@@ -13,6 +13,7 @@ resume: True
 model_name: dinov2_vits14                        # Name of the backbone model. Choose from ['dinov2_vits14', 'dino_vitb24', 'dino_vitl14', 'dino_vitg14', 'vit_b_16', 'dino_resnet50-layer2-layer3', 'resnet18-layer2-layer3', 'wide_resnet50_2-layer2-layer3'].
 normalize_embeddings: True                       # embeddings are normalized to unit norm if True
 use_positional_encoding: False                    # embeddings are extended with a positional encoding if True
+skip_builtin_metrics: True                        # stop after saving test_stats; skip the slow/broken 65GB pixel-metric loop (metrics via analysis/pixel_level.py)
 embedding_pca_components: -1                      # Number of components for the pca of embeddings (set to -1 to not use any pca)
 embedding_pca_batchsize: 200                       # Number of samples to use for estimating pca (estimation only done once)
 
