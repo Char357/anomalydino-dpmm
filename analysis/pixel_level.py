@@ -76,6 +76,12 @@ def parse_args():
     p.add_argument("--tag", default="",
                    help="label appended to the output filename (e.g. gmm_K86); "
                         "empty keeps the DPMM default pixel_level_results.csv")
+    p.add_argument("--paper-auroc", type=float, default=90.20,
+                   help="paper's pixel AUROC%% for this dataset (default = RESC 90.20; BraTS ~96)")
+    p.add_argument("--paper-aupr", type=float, default=41.66,
+                   help="paper's pixel AUPR%% for this dataset (default = RESC 41.66)")
+    p.add_argument("--paper-name", default="RESC",
+                   help="dataset name shown in the comparison line")
     return p.parse_args()
 
 
@@ -153,12 +159,12 @@ def main():
 
     # Which of our maps best matches the paper's headline number?
     best = max(rows)   # highest AUROC
-    print("\n=== comparison to paper (RESC, Table 1 'Ours', 40 epochs) ===")
-    print(f"paper:      AUROC = {PAPER_RESC['auroc']:.2f} %   AUPR = {PAPER_RESC['aupr']:.2f} %")
+    print(f"\n=== comparison to paper ({args.paper_name}, Table 1 'Ours', 40 epochs) ===")
+    print(f"paper:      AUROC = {args.paper_auroc:.2f} %   AUPR = {args.paper_aupr:.2f} %")
     print(f"ours(best): AUROC = {best[0]:.2f} %   AUPR = {best[1]:.2f} %   "
           f"[{best[2]}, 20 epochs]")
-    print(f"difference: AUROC {best[0] - PAPER_RESC['auroc']:+.2f} pp   "
-          f"AUPR {best[1] - PAPER_RESC['aupr']:+.2f} pp")
+    print(f"difference: AUROC {best[0] - args.paper_auroc:+.2f} pp   "
+          f"AUPR {best[1] - args.paper_aupr:+.2f} pp")
 
     os.makedirs("analysis/out", exist_ok=True)
     suffix = f"_{args.tag}" if args.tag else ""
