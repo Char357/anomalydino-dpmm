@@ -269,6 +269,56 @@ class DINOv2Wrapper(VisionTransformerWrapper):
         return mask
 
 
+# DINOv3 Wrapper (Hugging Face transformers). DINOv3 differs from DINOv2 in two ways this
+# handles: patch size 16 (not 14) and extra *register* tokens after the class token. We reuse
+# all of DINOv2Wrapper (crop_image, fit_pca, masking, PCA) and only override how the model is
+# loaded and how patch tokens are pulled out.
+class DINOv3Wrapper(DINOv2Wrapper):
+    HF_IDS = {                                        # short config name -> gated HF model id
+        "dinov3_vits16": "facebook/dinov3-vits16-pretrain-lvd1689m",
+    }
+
+    def load_model(self):
+        from transformers import AutoModel
+        hf_id = self.HF_IDS.get(self.model_name, self.model_name)
+        model = AutoModel.from_pretrained(hf_id)
+        model.eval()
+        # let the inherited crop_image() (which reads self.model.patch_size) work unchanged
+        model.patch_size = model.config.patch_size
+        self.transform = transforms.Compose([
+            transforms.Resize(size=self.smaller_edge_size,
+                              interpolation=transforms.InterpolationMode.BICUBIC, antialias=True),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),  # ImageNet
+        ])
+        return model.to(self.device)
+
+    def get_embedding_dimension(self):
+        return self.model.config.hidden_size if self.num_pca_components == -1 else self.num_pca_components
+
+    def extract_features(self, image: torch.Tensor, use_pca=True) -> torch.Tensor:
+        with torch.inference_mode():
+            image_batch = image.to(self.device)
+            try:
+                out = self.model(pixel_values=image_batch, interpolate_pos_encoding=True)
+            except TypeError:
+                out = self.model(pixel_values=image_batch)
+            hidden = out.last_hidden_state                        # (B, prefix + N_patches, D)
+
+            # Robustly drop the leading class + register tokens: prefix = seq - #patches.
+            _, _, Hc, Wc = image_batch.shape
+            n_patches = (Hc // self.model.patch_size) * (Wc // self.model.patch_size)
+            n_prefix = hidden.shape[1] - n_patches
+            tokens = hidden[:, n_prefix:, :]                      # patch tokens only
+
+            if self.normalize_embeddings:
+                tokens = F.normalize(tokens, dim=2)
+            if self.pca is not None and use_pca:
+                B, N, D = tokens.shape
+                tokens = self.pca.transform(tokens.reshape(B * N, D)).reshape(B, N, -1)
+        return tokens
+
+
 class ResNetWrapper(VisionTransformerWrapper):
     model: TimmFeatureExtractor
 
@@ -429,6 +479,14 @@ def get_model(
         )
     elif model_name.startswith("vit"):
         return ViTWrapper(
+            model_name,
+            device,
+            smaller_edge_size,
+            num_pca_components=num_pca_components,
+            normalize_embeddings=normalize_embeddings,
+        )
+    elif model_name.startswith("dinov3"):
+        return DINOv3Wrapper(
             model_name,
             device,
             smaller_edge_size,
