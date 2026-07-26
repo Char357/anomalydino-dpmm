@@ -55,7 +55,10 @@ def parse_args():
     p.add_argument("--name", default="BraTS", help="dataset name in the title")
     p.add_argument("--tag", default="", help="output filename suffix")
     p.add_argument("--cmap", default="inferno",
-                   help="anomaly-map colormap (inferno=lighter, magma=darker, plasma=lightest)")
+                   help="anomaly-map colormap (inferno matches the old figure; try magma/plasma)")
+    p.add_argument("--vmax-pct", type=float, default=100.0,
+                   help="contrast stretch: map this percentile of the map to the brightest color "
+                        "(e.g. 96 makes hot regions pop; 100 = no stretch)")
     return p.parse_args()
 
 
@@ -93,7 +96,8 @@ def make_one(stats, i, args):
     ax[1].set_title("ground truth (lesion)", fontsize=14)
 
     label = LABELS.get(args.map, args.map)
-    im = ax[2].imshow(amap, cmap=args.cmap)
+    vmax = np.percentile(amap, args.vmax_pct) if args.vmax_pct < 100 else None
+    im = ax[2].imshow(amap, cmap=args.cmap, vmax=vmax)
     ax[2].contour(lab, levels=[0.5], colors="#39FF14", linewidths=1.2)
     ax[2].set_title(f"anomaly heatmap ({label})", fontsize=14)
     cb = fig.colorbar(im, ax=ax[2], fraction=0.046, pad=0.04)
