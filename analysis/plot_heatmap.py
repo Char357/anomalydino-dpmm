@@ -32,6 +32,15 @@ OUT = "analysis/out"
 BG = "#17131f"
 FG = "#f2eefc"
 
+# readable label per score map, for the title
+LABELS = {
+    "cosine_distance_map": "cosine",
+    "anomaly_map": "log-likelihood",
+    "distance_map": "Euclidean",
+    "max_log_prob_map": "max log-prob",
+    "weighted_distance_map": "Mahalanobis",
+}
+
 
 def parse_args():
     p = argparse.ArgumentParser(description="Single-scan cosine anomaly heatmap composite (dark).")
@@ -81,14 +90,15 @@ def make_one(stats, i, args):
     ax[1].imshow(gt, cmap="spring", alpha=0.9, vmin=0, vmax=1)   # lesion in bright magenta/green
     ax[1].set_title("ground truth (lesion)", fontsize=14)
 
+    label = LABELS.get(args.map, args.map)
     im = ax[2].imshow(amap, cmap="magma")
     ax[2].contour(lab, levels=[0.5], colors="#39FF14", linewidths=1.2)
-    ax[2].set_title("anomaly heatmap (cosine)", fontsize=14)
+    ax[2].set_title(f"anomaly heatmap ({label})", fontsize=14)
     cb = fig.colorbar(im, ax=ax[2], fraction=0.046, pad=0.04)
     cb.ax.yaxis.set_tick_params(color=FG)
     plt.setp(plt.getp(cb.ax.axes, "yticklabels"), color=FG)
 
-    fig.suptitle(f"{args.name} scan {i:04d} — cosine distance", fontsize=17,
+    fig.suptitle(f"{args.name} scan {i:04d} — {label}", fontsize=17,
                  fontweight="bold", color=FG, y=1.0)
     fig.tight_layout()
 
