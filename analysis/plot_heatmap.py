@@ -39,6 +39,8 @@ def parse_args():
     p.add_argument("--index", type=int, default=31, help="scan index within the split")
     p.add_argument("--top-lesion", action="store_true",
                    help="ignore --index; pick the anomalous scan with the largest GT lesion")
+    p.add_argument("--top-n", type=int, default=0,
+                   help="ignore --index; make N heatmaps for the N largest-lesion scans (pick your favourite)")
     p.add_argument("--split", default="anomalous", choices=["anomalous", "normal"])
     p.add_argument("--map", default="cosine_distance_map", help="score map to visualize")
     p.add_argument("--name", default="BraTS", help="dataset name in the title")
@@ -52,26 +54,10 @@ def to_gray(img):
     return g.numpy()
 
 
-def main():
-    args = parse_args()
-    stats = torch.load(os.path.join(args.run, f"test_stats_{args.split}.pth"),
-                       map_location="cpu", weights_only=False, mmap=True)
-
-    labels = stats["labels"]                                  # (N,1,Hl,Wl)
-    n = stats["image"].shape[0]
-
-    if args.top_lesion:
-        # fraction of positive pixels per image; pick the biggest lesion
-        frac = (labels.reshape(n, -1) > 0.5).float().mean(1)
-        i = int(torch.argmax(frac))
-        print(f"--top-lesion -> index {i} (lesion covers {100*frac[i]:.1f}% of the frame)")
-    else:
-        i = args.index
-    if not (0 <= i < n):
-        raise SystemExit(f"index {i} out of range (split has {n} images)")
-
+def make_one(stats, i, args):
+    labels = stats["labels"]
     path = stats["image_paths"][i] if "image_paths" in stats else "?"
-    print(f"scan index {i} of {n}  ({args.split})  ->  {path}")
+    print(f"scan index {i}  ->  {path}")
 
     img = to_gray(stats["image"][i])
     H, W = img.shape
@@ -112,6 +98,30 @@ def main():
     fig.savefig(out_path, dpi=150, bbox_inches="tight", facecolor=BG)
     plt.close(fig)
     print(f"saved -> {out_path}")
+
+
+def main():
+    args = parse_args()
+    stats = torch.load(os.path.join(args.run, f"test_stats_{args.split}.pth"),
+                       map_location="cpu", weights_only=False, mmap=True)
+    n = stats["image"].shape[0]
+
+    # decide which scan(s) to render
+    if args.top_n > 0 or args.top_lesion:
+        frac = (stats["labels"].reshape(n, -1) > 0.5).float().mean(1)   # lesion size per image
+        order = torch.argsort(frac, descending=True)
+        k = args.top_n if args.top_n > 0 else 1
+        indices = [int(x) for x in order[:k]]
+        print(f"largest-lesion scans (lesion % of frame): "
+              + ", ".join(f"{i}:{100*frac[i]:.1f}%" for i in indices))
+    else:
+        indices = [args.index]
+
+    for i in indices:
+        if 0 <= i < n:
+            make_one(stats, i, args)
+        else:
+            print(f"skip index {i} (out of range 0..{n-1})")
 
 
 if __name__ == "__main__":
