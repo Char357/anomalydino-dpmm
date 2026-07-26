@@ -54,6 +54,8 @@ def parse_args():
     p.add_argument("--map", default="cosine_distance_map", help="score map to visualize")
     p.add_argument("--name", default="BraTS", help="dataset name in the title")
     p.add_argument("--tag", default="", help="output filename suffix")
+    p.add_argument("--cmap", default="inferno",
+                   help="anomaly-map colormap (inferno=lighter, magma=darker, plasma=lightest)")
     return p.parse_args()
 
 
@@ -91,7 +93,7 @@ def make_one(stats, i, args):
     ax[1].set_title("ground truth (lesion)", fontsize=14)
 
     label = LABELS.get(args.map, args.map)
-    im = ax[2].imshow(amap, cmap="magma")
+    im = ax[2].imshow(amap, cmap=args.cmap)
     ax[2].contour(lab, levels=[0.5], colors="#39FF14", linewidths=1.2)
     ax[2].set_title(f"anomaly heatmap ({label})", fontsize=14)
     cb = fig.colorbar(im, ax=ax[2], fraction=0.046, pad=0.04)
