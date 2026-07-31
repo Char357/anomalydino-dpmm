@@ -5,3 +5,25 @@ __pycache__
 .vscode
 logs
 results
+
+# Kept local only — not part of the one-page report
+/dinov3_smoketest.py
+/analysis/effective_components.py
+/analysis/find_scan.py
+/analysis/plot_results.py
+/config/brain_dinov3.yaml
+/config/RESC_full.yaml
+/config/bras2021_full.yaml
+/config/brain_dpmm.yaml
+/config/RESC_gmm_K10.yaml
+/config/RESC_gmm_K50.yaml
+/config/RESC_gmm_K86.yaml
+/config/RESC_gmm_K150.yaml
+/config/brain_gmm_K10.yaml
+/config/brain_gmm_K86.yaml
+/config/brain_gmm_K150.yaml
+/config/liver_diag.yaml
+/config/liver_full.yaml
+/config/RESC_gmm_diag_K50.yaml
+/config/brain_gmm_diag_K50.yaml
+/report_results/heatmaps/
