@@ -1,0 +1,9 @@
+== RESC diag DPMM: active components (training log) ==
+resc_diag_1761746.out:Warning: More than 90 components used: 91, 91, 91
+resc_diag_1761746.out:Warning: More than 90 components used: 91, 91, 91
+resc_diag_1761746.out:Warning: More than 90 components used: 91, 91, 91
+
+== brain diag DPMM: active components ==
+brain_diag_1761768.out:Warning: More than 90 components used: 107, 107, 107
+brain_diag_1761768.out:Warning: More than 90 components used: 107, 107, 107
+brain_diag_1761768.out:Warning: More than 90 components used: 107, 107, 107

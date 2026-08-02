@@ -16,8 +16,9 @@ Figures are in `figures/`, qualitative heatmaps in `heatmaps/`.
 
 \*Brain AUPR is base-rate-dependent and **not comparable**: our metric scores all pixels including the
 large background (~1.1% anomalous), which deflates AUPR. AUROC (base-rate-independent) reproduces to
-within ~1 pp. Our DPMM selects ~102 (RESC) / ~107 (BraTS) clusters vs. the paper's 120–150, which
-explains the small AUROC gap (see the K-sweep).
+within ~1 pp. Our DPMM settles on ~91 (RESC) / ~107 (BraTS) active clusters vs. the paper's 120–150,
+which explains the small AUROC gap (see the K-sweep). Note the count *evolves during training* and
+converges to these values; an early-epoch snapshot is higher (~102 for RESC).
 
 ## 2. Score-function ablation (diag DPMM, pixel-level AUROC)
 
@@ -35,7 +36,7 @@ Cosine is best on both, matching the paper's ordering.
 | GMM K=10 | 80.80 | 29.95 | 91.78 | 8.94 |
 | GMM K=100 | 90.20 | 42.03 | 94.76 | 13.86 |
 | GMM K=150 | 91.98 | 44.87 | 95.17 | 15.71 |
-| DPMM (auto K≈102/107) | 89.81 | 41.59 | 95.23 | 15.54 |
+| DPMM (auto K≈91/107) | 89.81 | 41.59 | 95.23 | 15.54 |
 
 K matters (K=10 collapses). Fixed K≈100 matches the DPMM. The DPMM's auto-K is near-optimal: at the
 plateau for BraTS (~107), a slight undershoot for RESC (still rising at K=150).

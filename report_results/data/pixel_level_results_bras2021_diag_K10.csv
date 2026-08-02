@@ -1,0 +1,8 @@
+score_map,auroc_pct,aupr_pct
+max_log_prob_map,91.9857,8.6132
+anomaly_map,91.9703,8.5979
+cosine_distance_map,91.7753,8.9385
+distance_map,91.7406,8.8011
+squared_distance_map,91.7111,8.7889
+weighted_distance_map,76.5860,3.2008
+squared_weighted_distance_map,76.3135,3.1407
