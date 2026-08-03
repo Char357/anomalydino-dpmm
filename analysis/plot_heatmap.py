@@ -1,20 +1,16 @@
 """
 Qualitative anomaly-heatmap composite for a single scan (cosine version, dark theme).
 
-Rebuilds the brain scan composite we had for full-covariance, but using the paper's headline
+Rebuilds the brain scan composite I had for full-covariance, but using the paper's headline
 score (cosine_distance_map) instead of log-likelihood. Runs on the cluster (needs the run's
 test_stats). 3-panel figure matching the old style:
 
     [ input scan ] [ ground truth (lesion) ] [ anomaly heatmap (cosine) ]
 
-Pick the scan either by index, or with --top-lesion to auto-select the anomalous scan with the
-LARGEST ground-truth lesion (a clear, illustrative example — recommended, since the old
-"scan_0031" numbering was a curated selection, not the test index). Examples (repo root):
+Pick the scan either by index, or with top-lesion to auto-select the anomalous scan with the
+LARGEST ground-truth lesion (lager ball-like tumor, since the old
+"scan_0031" numbering was a curated selection, not the test index). 
 
-    $PY analysis/plot_heatmap.py --run "$RUNB" --top-lesion --tag brain_diag_dpmm
-    $PY analysis/plot_heatmap.py --run "$RUNB" --index 31   --tag brain_diag_dpmm
-
-Output: analysis/out/heatmap_{tag}_scan_{index:04d}.png
 """
 
 import os

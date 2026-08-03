@@ -1,9 +1,4 @@
-"""Recompute image-level AUROC/AUPR from the saved image_level_scores_*.npz files and write a
-human-readable CSV (the .npz are binary per-image score arrays; this turns them into verifiable
-proof). Run from the repository root:
-
-    python report_results/recompute_image_auroc.py
-
+"""Makes a readable csv file for image-level results
 Reads report_results/data/image_level_scores_*.npz, writes report_results/data/image_level_auroc.csv.
 """
 import os

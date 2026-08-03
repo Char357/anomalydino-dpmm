@@ -15,11 +15,9 @@ exactly those:
      runs the same EM mean/covariance update but WITHOUT updating the stick-breaking
      ratios v or adapting the concentration alpha.
 
-Everything else -- the Gaussian components, the EM responsibilities, checkpointing, and
-all seven anomaly-score maps -- is inherited unchanged from DPMM, so the evaluation
-pipeline is identical and the DPMM-vs-GMM comparison is apples-to-apples.
-
-This is to compare dpmm and gmm using four different K for gmm.
+Everything else (the Gaussian components, the EM responsibilities, checkpointing, and
+all seven anomaly-score maps) is inherited unchanged from DPMM, so the evaluation
+pipeline is identical.
 
 """
 

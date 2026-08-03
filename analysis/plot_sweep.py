@@ -2,23 +2,10 @@
 DPMM-vs-GMM sweep figure (contribution Step 2b).
 
 Plots anomaly-detection performance of the fixed-K GMM as a function of K, with the
-DPMM -- which auto-selects the number of components -- drawn as a horizontal reference
-line (it has no K to choose). This is the figure that tests the paper's central
+DPMM, which auto-selects the number of components, drawn as a horizontal reference
+line (doen't have to chose K). This is the figure that tests the paper's central
 "no need to tune K" claim.
 
-Inputs (produced by pixel_level.py / image_level.py, one file per model):
-  pixel_level_results{tag}.csv      pixel-level AUROC/AUPR per score map
-  image_level_scores{tag}.npz       pooled image scores + y_true
-Download these small files into analysis/out/ first (or run this on the cluster where they live).
-
-Example (diagonal-cov reproduction, RESC, cosine score):
-  python analysis/plot_sweep.py --name "RESC (diag)" --ks 10 100 150 --dpmm-k 102 \
-      --dpmm-tag _diag_repro --gmm-tag-prefix _RESC_diag_K --score cosine_distance_map \
-      --out-suffix _diag
-
-Output: analysis/out/fig_sweep_dpmm_vs_gmm{out-suffix}.png
-
-matplotlib + sklearn only, so it runs on the local Anaconda as-is.
 """
 
 import csv

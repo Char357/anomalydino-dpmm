@@ -1,8 +1,7 @@
 """
 Pixel-level anomaly detection evaluation for AnomalyDINO-DPMM (Table 1 reproduction).
 
-WHY THIS SCRIPT EXISTS
-----------------------
+WHY THIS SCRIPT EXISTS:
 The repository's own pixel-level metric loop (src/test.py -> calculate_metric)
 does this:
 
@@ -15,29 +14,24 @@ fed into torchmetrics 0.10.3, which additionally *buffers every pixel* to build 
 ROC/PR curve. That needs ~65 GB of RAM, runs for hours, and crashed on AUPRO after 7+ hours.
 (AUPRO is not even a Table 1 metric, so we drop it.)
 
-HOW WE WORK AROUND THE BOTTLENECK
----------------------------------
+HOW I WORKED AROUND THE BOTTLENECK:
 Two independent ideas, both commented at the point they are used below:
 
-  (1) STREAMING: we never hold all images at once. We process ONE image at a time,
-      upsample just that image, take what we need, and throw the rest away. Peak
+  (1) STREAMING: I never hold all images at once. I processed ONE image at a time,
+      upsample just that image, take what I need, and throw the rest away. Peak
       memory for the upsampling step is therefore one image (~0.5 M pixels), not
       one billion.
 
   (2) SUBSAMPLING: AUROC and AUPR are computed over a *population* of pixels. A
       uniform random subsample of that population is an UNBIASED estimator of the
       same AUROC/AUPR (it preserves the positive:negative ratio in expectation).
-      Keeping e.g. 5% of pixels turns ~9.5e8 points into ~5e7 -- a few hundred MB
-      that scikit-learn sorts in seconds -- while the estimate stays accurate to
-      ~1e-3. This is the key trick that replaces the 65 GB buffer.
+      Keeping e.g. 5% of pixels turns ~9.5e8 points into ~5e7, so a few hundred MB
+      that scikit-learn sorts in seconds, while the estimate stays accurate to
+      ~1e-3. This is the trick that replaces the 65 GB buffer.
 
-We otherwise match the paper's protocol exactly: bilinear upsampling of each score
+I otherwise match the paper's protocol exactly: bilinear upsampling of each score
 map to the ground-truth mask resolution, then score ALL pixels (background too,
-just like the repo -- calculate_metric does not apply the object mask).
-
-Paper's target for RESC (Table 1, "Ours"):  AUROC = 90.20 %,  AUPR = 41.66 %
-Our run used 20 epochs (the paper used 40); comparing to these numbers tells us
-whether 20 epochs was enough before we build the rest of the analysis on it.
+just like the repo -> calculate_metric does not apply the object mask).
 
 """
 

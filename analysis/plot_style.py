@@ -1,14 +1,6 @@
 """
 Shared dark-theme plot style for the presentation figures, tuned to the dark-purple
-slides (Impact headings, like the deck's Bebas Neue). The palette was validated with
-the dataviz skill's computable checks: CVD-safe and high-contrast on the dark surface.
-Bright/pastel marks are intentionally above the standard dark lightness band so they
-pop on the deep-purple background (contrast is what matters on dark, and it passes).
-
-Usage: at the top of a plotting script,
-    from plot_style import use_style, BLUE, TEAL, GOLD, CORAL, PURPLE_RAMP, MUTED
-    use_style()
-then colour marks with the named constants (categorical in the given order).
+slides (Impact headings, like the deck's Bebas Neue). 
 """
 
 import matplotlib.pyplot as plt
